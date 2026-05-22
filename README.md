@@ -44,8 +44,7 @@ These are printed on your card. You'll need them in the steps below.
 | Field | Value |
 |---|---|
 | **GitHub Token** | *(on your card — do not share)* |
-| **Repo** | `github.com/1p-sigmaboy/bh2026-vault-commit` |
-| **Vault Name** | `Private` |
+| **Repo** | `github.com/1P-sigmaboy/bh2026-vault-commit` |
 
 ---
 
@@ -53,27 +52,28 @@ These are printed on your card. You'll need them in the steps below.
 
 ### Step 1 — Store the token in 1Password
 
-Open 1Password and create a new item in the **`Private`** vault:
+Open 1Password and create a new item in your **Private** vault:
 
 1. Click **New Item → Login**
-2. Set the **Title** to `GitHub-PAT`
-3. Paste your GitHub token from the card into the **Password** field
-4. Save the item
+2. Set the **Title** to `BH-GitHub-PAT`
+3. Add a new field, set the label to `token`
+4. Paste your GitHub token from the card into the `token` field
+5. Save the item
 
 Verify it's stored correctly:
 
 ```bash
-op item get "GitHub-PAT" --vault "Private"
+op item get "BH-GitHub-PAT" --vault "Private"
 ```
 
 ---
 
-### Step 2 — Find your secret reference
+### Step 2 — Confirm your secret reference resolves
 
 Run the following to confirm the exact reference URI for your token:
 
 ```bash
-op read "op://Private/GitHub-PAT/token"
+op read "op://Private/BH-GitHub-PAT/token"
 ```
 
 If your token value is printed back — your reference is valid. ✅
@@ -81,7 +81,7 @@ If your token value is printed back — your reference is valid. ✅
 Your secret reference is:
 
 ```
-op://Private/GitHub-PAT/token
+op://Private/BH-GitHub-PAT/token
 ```
 
 ---
@@ -92,14 +92,14 @@ Open `commit.js`. Find this line near the top:
 
 ```javascript
 // ❌ HARDCODED — your job is to fix this
-const GITHUB_TOKEN = "ghp_XXXXXXXXXXXXXXXXXXXX";
+const BH_GITHUB_TOKEN = "ghp_XXXXXXXXXXXXXXXXXXXX";
 ```
 
 Replace it so the token is read from the environment:
 
 ```javascript
 // ✅ FIXED — injected at runtime by op run
-const GITHUB_TOKEN = process.env.BH_GITHUB_TOKEN;
+const BH_GITHUB_TOKEN = process.env.BH_GITHUB_TOKEN;
 ```
 
 Save the file.
@@ -111,15 +111,17 @@ Save the file.
 Use `op run` to inject your secret reference at runtime. Replace `@YourHandle` with your name or GitHub username:
 
 ```bash
-BH_GITHUB_TOKEN="op://Private/GitHub-PAT/token" \
-  op run -- node commit.js @YourHandle
+BH_GITHUB_TOKEN="op://Private/BH-GitHub-PAT/token" op run -- node commit.js @YourHandle
 ```
 
 A successful run prints:
 
 ```
-✅ Commit successful! SHA: abc123...
-👉 Show this to booth staff to claim your swag.
+✅ Commit successful!
+   SHA: abc123...
+   Handle: @YourHandle
+
+👉 Show this output to booth staff to claim your swag.
 ```
 
 ---
@@ -149,16 +151,21 @@ Each day you complete it earns you **one additional raffle ticket** — up to **
 The 1Password CLI isn't installed or isn't in your PATH.  
 → Install it from https://developer.1password.com/docs/cli/get-started and follow the PATH setup instructions.
 
-**`[ERROR] 401 Unauthorized`**  
-Your token may be incorrect or the wrong field was referenced.  
-→ Run `op read "op://BH2026-Challenge/GitHub-PAT/password"` and confirm the value matches your card.
+**`❌ BH_GITHUB_TOKEN is not set. Did you run this with op run?`**  
+You ran `node commit.js` directly instead of through `op run`.  
+→ Use the full command: `BH_GITHUB_TOKEN="op://Private/BH-GitHub-PAT/token" op run -- node commit.js @YourHandle`
+
+**`❌ Something went wrong: Bad credentials`**  
+The token isn't resolving correctly from your vault.  
+→ Run `op read "op://Private/BH-GitHub-PAT/token"` and confirm it prints your token value.  
+→ Make sure the item is named exactly `BH-GitHub-PAT` and the field is named exactly `token`.
 
 **`op read` returns nothing / empty**  
 The item name or field name doesn't match.  
-→ Run `op item get "GitHub-PAT" --vault "BH2026-Challenge"` to see all field labels and correct the reference.
+→ Run `op item get "BH-GitHub-PAT" --vault "Private"` to see all field labels and correct the reference.
 
-**`[ERROR] 403 Forbidden`**  
-Your token doesn't have write access to the repo.  
+**`❌ Could not read repo ref. Check your token permissions.`**  
+Your token doesn't have write access to the repo or has expired.  
 → Visit the booth and ask staff for a replacement card with a fresh token.
 
 **Biometric prompt isn't appearing**  
