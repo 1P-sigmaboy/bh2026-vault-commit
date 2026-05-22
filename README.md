@@ -44,7 +44,7 @@ These are printed on your card. You'll need them in the steps below.
 | Field | Value |
 |---|---|
 | **GitHub Token** | *(on your card — do not share)* |
-| **Repo** | `github.com/1password/bh2026-vault-commit` |
+| **Repo** | `github.com/1p-sigmaboy/bh2026-vault-commit` |
 | **Vault Name** | `BH2026-Challenge` |
 
 ---
