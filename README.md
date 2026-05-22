@@ -53,7 +53,7 @@ These are printed on your card. You'll need them in the steps below.
 
 ### Step 1 — Store the token in 1Password
 
-Open 1Password and create a new item in the **`BH2026-Challenge`** vault:
+Open 1Password and create a new item in the **`Private`** vault:
 
 1. Click **New Item → Login**
 2. Set the **Title** to `GitHub-PAT`
@@ -73,7 +73,7 @@ op item get "GitHub-PAT" --vault "Private"
 Run the following to confirm the exact reference URI for your token:
 
 ```bash
-op read "op://BH2026-Challenge/GitHub-PAT/token"
+op read "op://Private/GitHub-PAT/token"
 ```
 
 If your token value is printed back — your reference is valid. ✅
