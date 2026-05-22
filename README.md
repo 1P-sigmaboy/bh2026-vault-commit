@@ -45,7 +45,7 @@ These are printed on your card. You'll need them in the steps below.
 |---|---|
 | **GitHub Token** | *(on your card — do not share)* |
 | **Repo** | `github.com/1p-sigmaboy/bh2026-vault-commit` |
-| **Vault Name** | `BH2026-Challenge` |
+| **Vault Name** | `Private` |
 
 ---
 
@@ -63,7 +63,7 @@ Open 1Password and create a new item in the **`BH2026-Challenge`** vault:
 Verify it's stored correctly:
 
 ```bash
-op item get "GitHub-PAT" --vault "BH2026-Challenge"
+op item get "GitHub-PAT" --vault "Private"
 ```
 
 ---
@@ -73,7 +73,7 @@ op item get "GitHub-PAT" --vault "BH2026-Challenge"
 Run the following to confirm the exact reference URI for your token:
 
 ```bash
-op read "op://BH2026-Challenge/GitHub-PAT/password"
+op read "op://BH2026-Challenge/GitHub-PAT/token"
 ```
 
 If your token value is printed back — your reference is valid. ✅
@@ -81,7 +81,7 @@ If your token value is printed back — your reference is valid. ✅
 Your secret reference is:
 
 ```
-op://BH2026-Challenge/GitHub-PAT/password
+op://Private/GitHub-PAT/token
 ```
 
 ---
@@ -99,7 +99,7 @@ Replace it so the token is read from the environment:
 
 ```javascript
 // ✅ FIXED — injected at runtime by op run
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_TOKEN = process.env.BH_GITHUB_TOKEN;
 ```
 
 Save the file.
@@ -111,7 +111,7 @@ Save the file.
 Use `op run` to inject your secret reference at runtime. Replace `@YourHandle` with your name or GitHub username:
 
 ```bash
-GITHUB_TOKEN="op://BH2026-Challenge/GitHub-PAT/password" \
+BH_GITHUB_TOKEN="op://Private/GitHub-PAT/token" \
   op run -- node commit.js @YourHandle
 ```
 

@@ -3,7 +3,7 @@ const { execSync } = require("child_process");
 
 // ❌ HARDCODED — your job is to fix this
 const GITHUB_TOKEN = "ghp_BH26K9mN2vP4qR7sT1uW3yAc8dE0fGJ5";
-//const GITHUB_TOKEN = op://Private/BH2026-GitHub-Sigmaboy/token
+//const GITHUB_TOKEN = process.env.BH_GITHUB_TOKEN
 const REPO = "https://github.com/1password/bh2026-vault-commit";
 const YOUR_HANDLE = process.argv[2] || "anonymous";
 
