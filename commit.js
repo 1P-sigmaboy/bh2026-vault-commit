@@ -1,7 +1,8 @@
 // commit.js — 1Password Developer Challenge · Black Hat USA 2026
 //Hard coded secrets are bad :(
 const BH_GITHUB_TOKEN = "ghp_BH26K9mN2vP4qR7sT1uW3yAc8dE0fGJ5";
-//const BH_GITHUB_TOKEN = process.env.BH_GITHUB_TOKEN;
+// Pull token in from the 1Password vault via environment variable
+// const BH_GITHUB_TOKEN = process.env.BH_GITHUB_TOKEN;
 const REPO_OWNER = "1P-sigmaboy";
 const REPO_NAME  = "bh2026-vault-commit";
 const YOUR_HANDLE = process.argv[2] || "anonymous";

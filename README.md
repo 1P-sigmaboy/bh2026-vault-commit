@@ -6,9 +6,9 @@
 
 ---
 
-## What You're Doing
+## You're Challenge Mission
 
-You've been given a script with a **hardcoded GitHub token** — a classic developer security mistake.  
+You've been given a script with a **hardcoded GitHub Access Token** — a classic developer security mistake.  
 Your mission: vault the token in 1Password, replace the plaintext secret with a secret reference, and push a commit using `op run`. Zero plaintext secrets. Zero excuses.
 
 ---
@@ -43,7 +43,7 @@ These are printed on your card. You'll need them in the steps below.
 
 | Field | Value |
 |---|---|
-| **GitHub Token** | *(on your card — do not share)* |
+| **GitHub Personal Access Token** | *(on your card — do not share)* |
 | **Repo** | `github.com/1P-sigmaboy/bh2026-vault-commit` |
 
 ---
@@ -54,16 +54,15 @@ These are printed on your card. You'll need them in the steps below.
 
 Open 1Password and create a new item in your **Private** vault:
 
-1. Click **New Item → Login**
-2. Set the **Title** to `BH-GitHub-PAT`
-3. Add a new field, set the label to `token`
-4. Paste your GitHub token from the card into the `token` field
-5. Save the item
+1. Click **New Item → API Credentials**
+2. Set the **Title** to `bh-github-pat`
+3. Paste your GitHub Personal Access Token into the `credential` field
+4. Save the item
 
 Verify it's stored correctly:
 
 ```bash
-op item get "BH-GitHub-PAT" --vault "Private"
+op item get "bh-github-pat" --vault "Private"
 ```
 
 ---
@@ -73,7 +72,7 @@ op item get "BH-GitHub-PAT" --vault "Private"
 Run the following to confirm the exact reference URI for your token:
 
 ```bash
-op read "op://Private/BH-GitHub-PAT/token"
+op read "op://Private/bh-github-pat/credential"
 ```
 
 If your token value is printed back — your reference is valid. ✅
@@ -81,7 +80,7 @@ If your token value is printed back — your reference is valid. ✅
 Your secret reference is:
 
 ```
-op://Private/BH-GitHub-PAT/token
+op://Private/bh-github-pat/credential
 ```
 
 ---
@@ -108,10 +107,10 @@ Save the file.
 
 ### Step 4 — Run the script with `op run`
 
-Use `op run` to inject your secret reference at runtime. Replace `@YourHandle` with your name or GitHub username:
+Use `op run` to inject your secret reference at runtime. Replace `YourHandle` with your name or GitHub username:
 
 ```bash
-BH_GITHUB_TOKEN="op://Private/BH-GitHub-PAT/token" op run -- node commit.js @YourHandle
+BH_GITHUB_TOKEN="op://Private/bh-github-pat/credential" op run -- node commit.js YourHandle
 ```
 
 A successful run prints:
@@ -153,16 +152,16 @@ The 1Password CLI isn't installed or isn't in your PATH.
 
 **`❌ BH_GITHUB_TOKEN is not set. Did you run this with op run?`**  
 You ran `node commit.js` directly instead of through `op run`.  
-→ Use the full command: `BH_GITHUB_TOKEN="op://Private/BH-GitHub-PAT/token" op run -- node commit.js @YourHandle`
+→ Use the full command: `BH_GITHUB_TOKEN="op://Private/bh-github-pat/credential" op run -- node commit.js @YourHandle`
 
 **`❌ Something went wrong: Bad credentials`**  
 The token isn't resolving correctly from your vault.  
-→ Run `op read "op://Private/BH-GitHub-PAT/token"` and confirm it prints your token value.  
-→ Make sure the item is named exactly `BH-GitHub-PAT` and the field is named exactly `token`.
+→ Run `op read "op://Private/bh-github-pat/credential"` and confirm it prints your token value.  
+→ Make sure the item is named exactly `bh-github-pat` and the field is named exactly `credential`.
 
 **`op read` returns nothing / empty**  
 The item name or field name doesn't match.  
-→ Run `op item get "BH-GitHub-PAT" --vault "Private"` to see all field labels and correct the reference.
+→ Run `op item get "bh-github-pat" --vault "Private"` to see all field labels and correct the reference.
 
 **`❌ Could not read repo ref. Check your token permissions.`**  
 Your token doesn't have write access to the repo or has expired.  
