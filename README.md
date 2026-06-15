@@ -6,10 +6,10 @@
 
 ---
 
-## You're Challenge Mission
+## Your Challenge Mission
 
 You've been given a script with a **hardcoded GitHub Access Token** — a classic developer security mistake.  
-Your mission: vault the token in 1Password, replace the plaintext secret with a secret reference, and push a commit using `op run`. Zero plaintext secrets. Zero excuses.
+Your mission: store the token in a **1Password Environment**, update the script to read it with the **1Password JS SDK**, and push a commit. Zero plaintext secrets. Zero excuses.
 
 ---
 
@@ -21,97 +21,66 @@ Make sure you have the following installed before you start:
 |---|---|
 | **Node.js** (v18+) | https://nodejs.org |
 | **1Password Desktop App** | https://1password.com/downloads |
-| **1Password CLI (`op`)** | https://developer.1password.com/docs/cli/get-started |
-
-Verify your CLI is ready:
-
-```bash
-op --version
-```
-
-If this is your first time using the CLI, sign in:
-
-```bash
-op signin
-```
-
----
-
-## Your Challenge Credentials
-
-These are printed on your card. You'll need them in the steps below.
-
-| Field | Value |
-|---|---|
-| **GitHub Personal Access Token** | *(on your card — do not share)* |
-| **Repo** | `github.com/1P-sigmaboy/bh2026-vault-commit` |
 
 ---
 
 ## Step-by-Step Instructions
 
-### Step 1 — Store the token in 1Password
+### Step 1 — Set up 1Password
 
-Open 1Password and create a new item in your **Private** vault:
+1. Install the [1Password desktop app](https://1password.com/downloads).
+2. Open **Settings → Developer**.
+3. Turn on **Show 1Password Developer experience**.
 
-1. Click **New Item → API Credentials**
-2. Set the **Title** to `bh-github-pat`
-3. Paste your GitHub Personal Access Token into the `credential` field
-4. Save the item
-
-Verify it's stored correctly:
-
-```bash
-op item get "bh-github-pat" --vault "Private"
-```
+This unlocks **Developer → View Environments** in the sidebar.
 
 ---
 
-### Step 2 — Confirm your secret reference resolves
+### Step 2 — Create your GitHub Personal Access Token
 
-Run the following to confirm the exact reference URI for your token:
+1. Go to [github.com](https://github.com) → **Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens**.
+2. Create a token scoped to the repo: `bh2026-vault-commit`.
+3. Set **Contents** to **Read and Write**.
+4. Copy the token — you'll need it in the next step.
 
-```bash
-op read "op://Private/bh-github-pat/credential"
-```
-
-If your token value is printed back — your reference is valid. ✅
-
-Your secret reference is:
-
-```
-op://Private/bh-github-pat/credential
-```
+> **Repo:** `github.com/1P-sigmaboy/bh2026-vault-commit`
 
 ---
 
-### Step 3 — Update the script
+### Step 3 — Create a 1Password Environment
 
-Open `commit.js`. Find this line near the top:
-
-```javascript
-// ❌ HARDCODED — your job is to fix this
-const BH_GITHUB_TOKEN = "ghp_XXXXXXXXXXXXXXXXXXXX";
-```
-
-Replace it so the token is read from the environment:
-
-```javascript
-// ✅ FIXED — injected at runtime by op run
-const BH_GITHUB_TOKEN = process.env.BH_GITHUB_TOKEN;
-```
-
-Save the file.
+1. In the 1Password desktop app, go to **Developer → View Environments → New Environment**.
+2. Name it `BH2026-Challenge`.
+3. Add a variable:
+   - **Name:** `BH_GITHUB_TOKEN`
+   - **Value:** your GitHub PAT from Step 2
 
 ---
 
-### Step 4 — Run the script with `op run`
+### Step 4 — Copy your Environment ID
 
-Use `op run` to inject your secret reference at runtime. Replace `YourHandle` with your name or GitHub username:
+1. Open the `BH2026-Challenge` environment.
+2. Select **Manage Environment → Copy environment ID**.
+3. Keep this ID handy — you'll pass it to the script at runtime.
+
+---
+
+### Step 5 — Clone the repo and run `commit.js`
 
 ```bash
-BH_GITHUB_TOKEN="op://Private/bh-github-pat/credential" op run -- node commit.js YourHandle
+git clone https://github.com/1P-sigmaboy/bh2026-vault-commit.git
+cd bh2026-vault-commit
+npm install
 ```
+
+Set your 1Password account name (shown at the top-left of the desktop app sidebar), then run the script:
+
+```bash
+export OP_ACCOUNT_NAME="Your Account Name"
+node commit.js @YourHandle <EnvironmentID>
+```
+
+The script uses the 1Password JS SDK to authenticate via the desktop app (biometrics) and reads `BH_GITHUB_TOKEN` directly from your Environment.
 
 A successful run prints:
 
@@ -125,7 +94,7 @@ A successful run prints:
 
 ---
 
-### Step 5 — Claim your prize
+### Step 6 — Show your commit SHA at the booth
 
 Bring your terminal (or a screenshot of the success output) to the **1Password booth**.  
 Staff will verify your commit on the repo and hand you:
@@ -139,51 +108,64 @@ Staff will verify your commit on the repo and hand you:
 
 ## Coming Back Tomorrow?
 
-Return on Day 2 and Day 3 to run the challenge again with the same or a new card.  
+Return on Day 2 and Day 3 to run the challenge again.  
 Each day you complete it earns you **one additional raffle ticket** — up to **3 tickets total** across the conference.
+
+---
+
+## What Changed vs. the Old Approach
+
+| | Before (`op run`) | Now (Environments + SDK) |
+|---|---|---|
+| **Secret storage** | 1Password vault item | 1Password Environment variable |
+| **Injection method** | `op run` shell wrapper | JS SDK `getVariables()` call |
+| **Auth** | CLI session | Desktop app biometrics |
+| **Dependencies** | 1Password CLI installed | `@1password/sdk` npm package |
+| **Runtime config** | `op://` secret reference in env | Environment ID as argument |
+| **Plaintext risk** | None | None |
 
 ---
 
 ## Troubleshooting
 
-**`op: command not found`**  
-The 1Password CLI isn't installed or isn't in your PATH.  
-→ Install it from https://developer.1password.com/docs/cli/get-started and follow the PATH setup instructions.
+**`❌ Usage: node commit.js @YourHandle <EnvironmentID>`**  
+You forgot your handle or Environment ID.  
+→ Run: `node commit.js @YourHandle <EnvironmentID>`
 
-**`❌ BH_GITHUB_TOKEN is not set. Did you run this with op run?`**  
-You ran `node commit.js` directly instead of through `op run`.  
-→ Use the full command: `BH_GITHUB_TOKEN="op://Private/bh-github-pat/credential" op run -- node commit.js @YourHandle`
+**`❌ Set OP_ACCOUNT_NAME to your 1Password account name`**  
+The SDK needs your account name to authenticate with the desktop app.  
+→ Set `OP_ACCOUNT_NAME` to the name shown at the top-left of the 1Password desktop app sidebar.
 
-**`❌ Something went wrong: Bad credentials`**  
-The token isn't resolving correctly from your vault.  
-→ Run `op read "op://Private/bh-github-pat/credential"` and confirm it prints your token value.  
-→ Make sure the item is named exactly `bh-github-pat` and the field is named exactly `credential`.
-
-**`op read` returns nothing / empty**  
-The item name or field name doesn't match.  
-→ Run `op item get "bh-github-pat" --vault "Private"` to see all field labels and correct the reference.
+**`❌ BH_GITHUB_TOKEN not found in the specified Environment`**  
+The variable name or Environment ID doesn't match.  
+→ Confirm the variable is named exactly `BH_GITHUB_TOKEN` in your `BH2026-Challenge` environment.  
+→ Re-copy the Environment ID from **Manage Environment → Copy environment ID**.
 
 **`❌ Could not read repo ref. Check your token permissions.`**  
 Your token doesn't have write access to the repo or has expired.  
-→ Visit the booth and ask staff for a replacement card with a fresh token.
+→ Create a new fine-grained PAT scoped to `bh2026-vault-commit` with **Contents: Read and Write**.
 
 **Biometric prompt isn't appearing**  
-1Password CLI needs to be linked to the Desktop App.  
-→ Open 1Password → Settings → Developer → enable **"Integrate with 1Password CLI"**
+The 1Password desktop app must be unlocked and the Developer experience must be enabled.  
+→ Open 1Password → **Settings → Developer** → enable **Show 1Password Developer experience**.
+
+**`npm install` fails on `@1password/sdk`**  
+You need Node.js v18 or later.  
+→ Run `node --version` and upgrade from https://nodejs.org if needed.
 
 ---
 
 ## How It Works Under the Hood
 
-When you run `op run`, 1Password:
+When you run `commit.js`, the 1Password JS SDK:
 
-1. Scans the environment for any values matching the `op://` URI format
-2. Resolves each reference by fetching the secret from your local vault
-3. Injects the plaintext value into the process environment **in memory only**
-4. Launches the process — in this case, `node commit.js`
-5. The secret is **never written to disk**, never stored in shell history, and destroyed when the process exits
+1. Authenticates with the 1Password desktop app (biometrics or account password)
+2. Calls `getVariables()` to fetch secrets from your Environment by ID
+3. Reads `BH_GITHUB_TOKEN` in memory — never from disk or shell history
+4. Uses the token to create and push a Git commit via the GitHub API
+5. Destroys the secret when the process exits
 
-This is the same pattern used in production CI/CD pipelines and developer workflows to eliminate plaintext secrets from codebases entirely.
+This is the same pattern used in production applications to eliminate plaintext secrets from codebases entirely.
 
 ---
 
@@ -192,8 +174,9 @@ This is the same pattern used in production CI/CD pipelines and developer workfl
 | Resource | Link |
 |---|---|
 | 1Password Developer Docs | https://developer.1password.com |
-| CLI Reference | https://developer.1password.com/docs/cli |
-| Secret References | https://developer.1password.com/docs/cli/secret-references |
+| Read Environments with SDKs | https://www.1password.dev/environments/read-environment-variables |
+| 1Password Environments | https://www.1password.dev/environments/overview |
+| 1Password SDKs | https://www.1password.dev/sdks/overview |
 | Free Trial | https://1password.com/try |
 
 ---

@@ -1,0 +1,16 @@
+{
+  "name": "bh2026-vault-commit",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "1Password Developer Challenge — Black Hat USA 2026",
+  "scripts": {
+    "commit": "node commit.js"
+  },
+  "dependencies": {
+    "@1password/sdk": "^0.4.1-beta.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
