@@ -1,65 +1,38 @@
 // commit.js — 1Password Developer Challenge · Black Hat USA 2026
-// Uses the 1Password JS SDK to read BH_GITHUB_TOKEN from a 1Password Environment.
-// No plaintext secrets. No op run. No .env files.
+// ❌ HARDCODED — your job is to fix this by reading from a 1Password Environment via the JS SDK.
 
 import { createClient, DesktopAuth } from "@1password/sdk";
 
 const REPO_OWNER = "1P-sigmaboy";
 const REPO_NAME = "bh2026-vault-commit";
 const YOUR_HANDLE = process.argv[2] || "anonymous";
-const ENVIRONMENT_ID = process.argv[3];
+
+// ❌ HARDCODED — replace with your GitHub PAT from your challenge card
+const BH_GITHUB_TOKEN = "ghp_XXXXXXXXXXXXXXXXXXXX";
+// ✅ FIXED — read from your 1Password Environment (see README for SDK setup)
+// const BH_GITHUB_TOKEN = (await client.environments.getVariables(process.argv[3])).variables.find((v) => v.name === "BH_GITHUB_TOKEN")?.value;
 
 const BASE_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
 
+const headers = {
+  Authorization: `Bearer ${BH_GITHUB_TOKEN}`,
+  "Content-Type": "application/json",
+  Accept: "application/vnd.github+json",
+  "X-GitHub-Api-Version": "2022-11-28",
+};
+
 async function run() {
   if (!YOUR_HANDLE || YOUR_HANDLE === "anonymous") {
-    console.error("❌ Usage: node commit.js @YourHandle <EnvironmentID>");
-    process.exit(1);
-  }
-  if (!ENVIRONMENT_ID) {
-    console.error(
-      "❌ Environment ID required. Get it from: 1Password Desktop → Developer → View Environments → Manage Environment → Copy environment ID"
-    );
+    console.error("❌ Usage: node commit.js @YourHandle");
     process.exit(1);
   }
 
-  const accountName = process.env.OP_ACCOUNT_NAME;
-  if (!accountName) {
-    console.error(
-      "❌ Set OP_ACCOUNT_NAME to your 1Password account name (top-left sidebar in the desktop app)."
-    );
+  if (!BH_GITHUB_TOKEN || BH_GITHUB_TOKEN === "ghp_XXXXXXXXXXXXXXXXXXXX") {
+    console.error("❌ Replace the hardcoded token with your GitHub PAT from your challenge card.");
     process.exit(1);
   }
 
-  // Step 1 — Authenticate via 1Password desktop app (biometrics / account password)
-  console.log("🔐 Authenticating with 1Password...");
-  const client = await createClient({
-    auth: new DesktopAuth(accountName),
-    integrationName: "BH2026 Vault Commit Challenge",
-    integrationVersion: "1.0.0",
-  });
-
-  // Step 2 — Fetch environment variables from the 1Password Environment
-  console.log("🔑 Reading BH_GITHUB_TOKEN from 1Password Environment...");
-  const envResponse = await client.environments.getVariables(ENVIRONMENT_ID);
-  const githubToken = envResponse.variables.find(
-    (v) => v.name === "BH_GITHUB_TOKEN"
-  )?.value;
-
-  if (!githubToken) {
-    console.error("❌ BH_GITHUB_TOKEN not found in the specified Environment.");
-    console.error("   Make sure the variable name is exactly: BH_GITHUB_TOKEN");
-    process.exit(1);
-  }
-
-  const headers = {
-    Authorization: `Bearer ${githubToken}`,
-    "Content-Type": "application/json",
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-  };
-
-  // Step 3 — Get the HEAD commit SHA from the ref
+  // Step 1 — Get the HEAD commit SHA from the ref
   const refRes = await fetch(`${BASE_URL}/git/refs/heads/main`, { headers });
   const refData = await refRes.json();
   const headCommitSha = refData.object?.sha;
@@ -69,7 +42,7 @@ async function run() {
     process.exit(1);
   }
 
-  // Step 4 — Get the tree SHA from the HEAD commit
+  // Step 2 — Get the tree SHA from the HEAD commit
   const commitRes = await fetch(`${BASE_URL}/git/commits/${headCommitSha}`, {
     headers,
   });
@@ -81,7 +54,7 @@ async function run() {
     process.exit(1);
   }
 
-  // Step 5 — Create a new commit using the correct tree SHA
+  // Step 3 — Create a new commit using the correct tree SHA
   const newCommitRes = await fetch(`${BASE_URL}/git/commits`, {
     method: "POST",
     headers,
@@ -101,7 +74,7 @@ async function run() {
     process.exit(1);
   }
 
-  // Step 6 — Update the branch ref to point to the new commit
+  // Step 4 — Update the branch ref to point to the new commit
   const updateRes = await fetch(`${BASE_URL}/git/refs/heads/main`, {
     method: "PATCH",
     headers,

@@ -21,6 +21,7 @@ Make sure you have the following installed before you start:
 |---|---|
 | **Node.js** (v18+) | https://nodejs.org |
 | **1Password Desktop App** | https://1password.com/downloads |
+| **1Password JS SDK** (`@1password/sdk`) | `npm install` (included in this repo) |
 
 ---
 
@@ -28,11 +29,17 @@ Make sure you have the following installed before you start:
 
 ### Step 1 — Set up 1Password
 
-1. Install the [1Password desktop app](https://1password.com/downloads).
+1. Install the [1Password desktop app](https://1password.com/downloads) and sign in to your account.
 2. Open **Settings → Developer**.
 3. Turn on **Show 1Password Developer experience**.
 
-This unlocks **Developer → View Environments** in the sidebar.
+   This unlocks **Developer → View Environments** in the sidebar.
+
+4. Under **Integrate with the 1Password SDKs**, select **Integrate with other apps**.
+
+   This enables local SDK authentication. When you run `commit.js`, the desktop app will prompt you to approve access — the same way you unlock 1Password.
+
+5. *(Recommended)* Open **Settings → Security** and turn on **Touch ID**, **Windows Hello**, or **system authentication** so you can approve SDK requests with biometrics.
 
 ---
 
@@ -72,6 +79,8 @@ git clone https://github.com/1P-sigmaboy/bh2026-vault-commit.git
 cd bh2026-vault-commit
 npm install
 ```
+
+> **Before running:** confirm Step 1 is complete — **Integrate with other apps** must be enabled under **Settings → Developer** so the SDK can authenticate locally.
 
 Set your 1Password account name (shown at the top-left of the desktop app sidebar), then run the script:
 
@@ -145,9 +154,11 @@ The variable name or Environment ID doesn't match.
 Your token doesn't have write access to the repo or has expired.  
 → Create a new fine-grained PAT scoped to `bh2026-vault-commit` with **Contents: Read and Write**.
 
-**Biometric prompt isn't appearing**  
-The 1Password desktop app must be unlocked and the Developer experience must be enabled.  
-→ Open 1Password → **Settings → Developer** → enable **Show 1Password Developer experience**.
+**Biometric / SDK approval prompt isn't appearing**  
+The desktop app must be unlocked and local SDK integration must be enabled.  
+→ Open 1Password → **Settings → Developer** → enable **Show 1Password Developer experience**.  
+→ Under **Integrate with the 1Password SDKs**, select **Integrate with other apps**.  
+→ Make sure the app is unlocked before running `commit.js`.
 
 **`npm install` fails on `@1password/sdk`**  
 You need Node.js v18 or later.  
