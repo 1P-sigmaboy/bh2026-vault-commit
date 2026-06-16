@@ -9,7 +9,9 @@
 ## Your Challenge Mission
 
 You've been given a script with a **hardcoded GitHub Access Token** — a classic developer security mistake.  
-Your mission: store the token in a **1Password Environment**, update the script to read it with the **1Password JS SDK**, and push a commit. Zero plaintext secrets. Zero excuses.
+Your mission: store the token in a **1Password Environment**, update the script to read it with the **1Password JS SDK**, and push a commit to the **`bh` branch**. Zero plaintext secrets. Zero excuses.
+
+> **`main` is read-only for participants.** Clone from `main` for the challenge files; `commit.js` pushes your completion commit to `bh` only.
 
 ---
 
@@ -48,9 +50,11 @@ Make sure you have the following installed before you start:
 1. Go to [github.com](https://github.com) → **Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens**.
 2. Create a token scoped to the repo: `bh2026-vault-commit`.
 3. Set **Contents** to **Read and Write**.
-4. Copy the token — you'll need it in the next step.
+4. Under **Branch access**, choose **Only select branches** and add **`bh`** (not `main`).
+5. Copy the token — you'll need it in the next step.
 
-> **Repo:** `github.com/1P-sigmaboy/bh2026-vault-commit`
+> **Repo:** `github.com/1P-sigmaboy/bh2026-vault-commit`  
+> **Commit target:** `bh` branch only
 
 ---
 
@@ -74,6 +78,8 @@ Make sure you have the following installed before you start:
 
 ### Step 5 — Clone the repo and run `commit.js`
 
+Clone **`main`** for the challenge files (default branch):
+
 ```bash
 git clone https://github.com/1P-sigmaboy/bh2026-vault-commit.git
 cd bh2026-vault-commit
@@ -89,13 +95,14 @@ export OP_ACCOUNT_NAME="Your Account Name"
 node commit.js @YourHandle <EnvironmentID>
 ```
 
-The script uses the 1Password JS SDK to authenticate via the desktop app (biometrics) and reads `BH_GITHUB_TOKEN` directly from your Environment.
+The script uses the 1Password JS SDK to authenticate via the desktop app (biometrics), reads `BH_GITHUB_TOKEN` from your Environment, and pushes a commit to the **`bh`** branch.
 
 A successful run prints:
 
 ```
 ✅ Commit successful!
    SHA: abc123...
+   Branch: bh
    Handle: @YourHandle
 
 👉 Show this output to booth staff to claim your swag.
@@ -106,7 +113,7 @@ A successful run prints:
 ### Step 6 — Show your commit SHA at the booth
 
 Bring your terminal (or a screenshot of the success output) to the **1Password booth**.  
-Staff will verify your commit on the repo and hand you:
+Staff will verify your commit on the **`bh` branch** and hand you:
 
 - 🧦 **1Password socks** — yours to keep immediately
 - 🎟️ **Raffle ticket** — for the Grand Prize drawing on the final day of the conference
@@ -151,8 +158,15 @@ The variable name or Environment ID doesn't match.
 → Re-copy the Environment ID from **Manage Environment → Copy environment ID**.
 
 **`❌ Could not read repo ref. Check your token permissions.`**  
-Your token doesn't have write access to the repo or has expired.  
-→ Create a new fine-grained PAT scoped to `bh2026-vault-commit` with **Contents: Read and Write**.
+Your token doesn't have write access to the repo, is scoped to the wrong branch, or has expired.  
+→ Create a new fine-grained PAT scoped to `bh2026-vault-commit` with **Contents: Read and Write** and **branch access: `bh` only**.
+
+**`❌ Branch "bh" does not exist yet`**  
+An admin must create the `bh` branch before the challenge starts. Ask booth staff.
+
+**`❌ Cannot update "bh"` / 403 errors**  
+Your PAT is likely scoped to `main` instead of `bh`, or `main` was targeted by mistake.  
+→ Re-create the token with **Only select branches → `bh`**.
 
 **Biometric / SDK approval prompt isn't appearing**  
 The desktop app must be unlocked and local SDK integration must be enabled.  
@@ -173,7 +187,7 @@ When you run `commit.js`, the 1Password JS SDK:
 1. Authenticates with the 1Password desktop app (biometrics or account password)
 2. Calls `getVariables()` to fetch secrets from your Environment by ID
 3. Reads `BH_GITHUB_TOKEN` in memory — never from disk or shell history
-4. Uses the token to create and push a Git commit via the GitHub API
+4. Uses the token to create and push a Git commit to the **`bh`** branch via the GitHub API
 5. Destroys the secret when the process exits
 
 This is the same pattern used in production applications to eliminate plaintext secrets from codebases entirely.
@@ -188,6 +202,7 @@ This is the same pattern used in production applications to eliminate plaintext 
 | Read Environments with SDKs | https://www.1password.dev/environments/read-environment-variables |
 | 1Password Environments | https://www.1password.dev/environments/overview |
 | 1Password SDKs | https://www.1password.dev/sdks/overview |
+| GitHub setup (admins) | [docs/GITHUB_SETUP.md](docs/GITHUB_SETUP.md) |
 | Free Trial | https://1password.com/try |
 
 ---

@@ -1,10 +1,13 @@
 // commit.js — 1Password Developer Challenge · Black Hat USA 2026
 // ❌ HARDCODED — your job is to fix this by reading from a 1Password Environment via the JS SDK.
+//
+// Commits are pushed to the `bh` branch only — `main` is locked to repo admins.
 
 import { createClient, DesktopAuth } from "@1password/sdk";
 
 const REPO_OWNER = "1P-sigmaboy";
 const REPO_NAME = "bh2026-vault-commit";
+const TARGET_BRANCH = "bh";
 const YOUR_HANDLE = process.argv[2] || "anonymous";
 
 // ❌ HARDCODED — replace with your GitHub PAT from your challenge card
@@ -21,6 +24,40 @@ const headers = {
   "X-GitHub-Api-Version": "2022-11-28",
 };
 
+async function getJson(url, options) {
+  const res = await fetch(url, options);
+  const data = await res.json();
+  return { res, data };
+}
+
+async function getBranchHeadSha() {
+  const { res, data } = await getJson(
+    `${BASE_URL}/git/refs/heads/${TARGET_BRANCH}`,
+    { headers }
+  );
+
+  if (res.ok) {
+    return data.object?.sha;
+  }
+
+  if (res.status === 404) {
+    console.error(
+      `❌ Branch "${TARGET_BRANCH}" does not exist yet. Ask booth staff — an admin must create it from main before the challenge starts.`
+    );
+    process.exit(1);
+  }
+
+  if (res.status === 403) {
+    console.error(
+      `❌ Token cannot read branch "${TARGET_BRANCH}". Check that your PAT is scoped to this branch.`
+    );
+    process.exit(1);
+  }
+
+  console.error("❌ Could not read branch ref:", data.message);
+  process.exit(1);
+}
+
 async function run() {
   if (!YOUR_HANDLE || YOUR_HANDLE === "anonymous") {
     console.error("❌ Usage: node commit.js @YourHandle");
@@ -32,21 +69,13 @@ async function run() {
     process.exit(1);
   }
 
-  // Step 1 — Get the HEAD commit SHA from the ref
-  const refRes = await fetch(`${BASE_URL}/git/refs/heads/main`, { headers });
-  const refData = await refRes.json();
-  const headCommitSha = refData.object?.sha;
+  const headCommitSha = await getBranchHeadSha();
 
-  if (!headCommitSha) {
-    console.error("❌ Could not read repo ref. Check your token permissions.");
-    process.exit(1);
-  }
-
-  // Step 2 — Get the tree SHA from the HEAD commit
-  const commitRes = await fetch(`${BASE_URL}/git/commits/${headCommitSha}`, {
-    headers,
-  });
-  const commitData = await commitRes.json();
+  // Step 1 — Get the tree SHA from the branch HEAD commit
+  const { data: commitData } = await getJson(
+    `${BASE_URL}/git/commits/${headCommitSha}`,
+    { headers }
+  );
   const treeSha = commitData.tree?.sha;
 
   if (!treeSha) {
@@ -54,17 +83,19 @@ async function run() {
     process.exit(1);
   }
 
-  // Step 3 — Create a new commit using the correct tree SHA
-  const newCommitRes = await fetch(`${BASE_URL}/git/commits`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      message: `BH2026 vault commit by @${YOUR_HANDLE.replace(/^@/, "")}`,
-      tree: treeSha,
-      parents: [headCommitSha],
-    }),
-  });
-  const newCommit = await newCommitRes.json();
+  // Step 2 — Create a new commit on top of the branch HEAD
+  const { res: newCommitRes, data: newCommit } = await getJson(
+    `${BASE_URL}/git/commits`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        message: `BH2026 vault commit by @${YOUR_HANDLE.replace(/^@/, "")}`,
+        tree: treeSha,
+        parents: [headCommitSha],
+      }),
+    }
+  );
 
   if (!newCommit.sha) {
     console.error(
@@ -74,17 +105,27 @@ async function run() {
     process.exit(1);
   }
 
-  // Step 4 — Update the branch ref to point to the new commit
-  const updateRes = await fetch(`${BASE_URL}/git/refs/heads/main`, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify({ sha: newCommit.sha, force: false }),
-  });
-  const updatedRef = await updateRes.json();
+  // Step 3 — Update the branch ref (bh only — main is protected)
+  const { res: updateRes, data: updatedRef } = await getJson(
+    `${BASE_URL}/git/refs/heads/${TARGET_BRANCH}`,
+    {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ sha: newCommit.sha, force: false }),
+    }
+  );
+
+  if (updateRes.status === 403) {
+    console.error(
+      `❌ Cannot update "${TARGET_BRANCH}". Your token may be scoped to the wrong branch, or you may be targeting main by mistake.`
+    );
+    process.exit(1);
+  }
 
   if (updatedRef.object?.sha) {
     console.log(`\n✅ Commit successful!`);
     console.log(`   SHA: ${newCommit.sha}`);
+    console.log(`   Branch: ${TARGET_BRANCH}`);
     console.log(`   Handle: @${YOUR_HANDLE.replace(/^@/, "")}`);
     console.log(`\n👉 Show this output to booth staff to claim your swag.\n`);
   } else {
