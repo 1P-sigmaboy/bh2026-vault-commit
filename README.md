@@ -11,7 +11,7 @@
 You've been given a script with a **hardcoded GitHub Access Token** — a classic developer security mistake.  
 Your mission: store the token in a **1Password Environment**, update the script to read it with the **1Password JS SDK**, and push a commit to the **`bh` branch**. Zero plaintext secrets. Zero excuses.
 
-> **`main` is read-only for participants.** Clone from `main` for the challenge files; `commit.js` pushes your completion commit to `bh` only.
+> **`main` is read-only for participants.** Fork the upstream repo, clone your fork for the challenge files, and push your completion commit to the **`bh`** branch on **your fork**.
 
 ---
 
@@ -33,7 +33,7 @@ Make sure you have the following installed before you start:
 
 1. Install the [1Password desktop app](https://1password.com/downloads) and sign in to your account.
 2. Open **Settings → Developer**.
-3. Turn on **Show 1Password Developer experience**.
+3. Ensure **Show 1Password Developer experience** is enabled.
 
    This unlocks **Developer → View Environments** in the sidebar.
 
@@ -45,45 +45,64 @@ Make sure you have the following installed before you start:
 
 ---
 
-### Step 2 — Create your GitHub Personal Access Token
+### Step 2 — Fork the repo
+
+Fine-grained PATs can only write to repositories you own. Fork the upstream challenge repo **before** creating a token:
+
+1. Open https://github.com/1P-sigmaboy/bh2026-vault-commit
+2. Click **Fork** (top-right) → create the fork under **your GitHub account**
+3. Confirm your fork exists at `github.com/<YourUsername>/bh2026-vault-commit`
+
+> Keep the fork name as `bh2026-vault-commit` — do not rename it.
+
+---
+
+### Step 3 — Create your GitHub Personal Access Token
 
 1. Go to [github.com](https://github.com) → **Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens**.
-2. Create a token scoped to the repo: `bh2026-vault-commit`.
+2. Create a token scoped to **your fork**: `<YourUsername>/bh2026-vault-commit` (not the upstream `1P-sigmaboy` repo).
 3. Set **Contents** to **Read and Write**.
 4. Under **Branch access**, choose **Only select branches** and add **`bh`** (not `main`).
 5. Copy the token — you'll need it in the next step.
 
-> **Repo:** `github.com/1P-sigmaboy/bh2026-vault-commit`  
-> **Commit target:** `bh` branch only
+> **Upstream (read-only reference):** `github.com/1P-sigmaboy/bh2026-vault-commit`  
+> **Your fork (PAT + commits):** `github.com/<YourUsername>/bh2026-vault-commit`  
+> **Commit target:** `bh` branch on your fork
 
 ---
 
-### Step 3 — Create a 1Password Environment
+### Step 4 — Create a 1Password Environment
 
 1. In the 1Password desktop app, go to **Developer → View Environments → New Environment**.
 2. Name it `BH2026-Challenge`.
 3. Add a variable:
    - **Name:** `BH_GITHUB_TOKEN`
-   - **Value:** your GitHub PAT from Step 2
+   - **Value:** your GitHub PAT from Step 3
 
 ---
 
-### Step 4 — Copy your Environment ID
+### Step 5 — Copy your Environment ID
 
 1. Open the `BH2026-Challenge` environment.
 2. Select **Manage Environment → Copy environment ID**.
-3. Keep this ID handy — you'll pass it to the script at runtime.
+3. Keep this ID handy, you'll pass it to the script at runtime.
 
 ---
 
-### Step 5 — Clone the repo and run `commit.js`
+### Step 6 — Clone your fork and run `commit.js`
 
-Clone **`main`** for the challenge files (default branch):
+Clone **your fork** (not the upstream repo):
 
 ```bash
-git clone https://github.com/1P-sigmaboy/bh2026-vault-commit.git
+git clone https://github.com/<YourUsername>/bh2026-vault-commit.git
 cd bh2026-vault-commit
 npm install
+```
+
+Open `commit.js` and set `REPO_OWNER` to your GitHub username (must match your fork):
+
+```javascript
+const REPO_OWNER = "<YourUsername>";
 ```
 
 > **Before running:** confirm Step 1 is complete — **Integrate with other apps** must be enabled under **Settings → Developer** so the SDK can authenticate locally.
@@ -95,7 +114,7 @@ export OP_ACCOUNT_NAME="Your Account Name"
 node commit.js @YourHandle <EnvironmentID>
 ```
 
-The script uses the 1Password JS SDK to authenticate via the desktop app (biometrics), reads `BH_GITHUB_TOKEN` from your Environment, and pushes a commit to the **`bh`** branch.
+The script uses the 1Password JS SDK to authenticate via the desktop app (biometrics), reads `BH_GITHUB_TOKEN` from your Environment, and pushes a commit to the **`bh`** branch on **your fork**.
 
 A successful run prints:
 
@@ -110,10 +129,10 @@ A successful run prints:
 
 ---
 
-### Step 6 — Show your commit SHA at the booth
+### Step 7 — Show your commit SHA at the booth
 
 Bring your terminal (or a screenshot of the success output) to the **1Password booth**.  
-Staff will verify your commit on the **`bh` branch** and hand you:
+Staff will verify your commit on the **`bh` branch of your fork** (`github.com/<YourUsername>/bh2026-vault-commit`) and hand you:
 
 - 🧦 **1Password socks** — yours to keep immediately
 - 🎟️ **Raffle ticket** — for the Grand Prize drawing on the final day of the conference
@@ -159,14 +178,21 @@ The variable name or Environment ID doesn't match.
 
 **`❌ Could not read repo ref. Check your token permissions.`**  
 Your token doesn't have write access to the repo, is scoped to the wrong branch, or has expired.  
-→ Create a new fine-grained PAT scoped to `bh2026-vault-commit` with **Contents: Read and Write** and **branch access: `bh` only**.
+→ Fork the repo first (Step 2), then create a fine-grained PAT scoped to **your fork** (`<YourUsername>/bh2026-vault-commit`) with **Contents: Read and Write** and **branch access: `bh` only**.
 
 **`❌ Branch "bh" does not exist yet`**  
-An admin must create the `bh` branch before the challenge starts. Ask booth staff.
+Create the `bh` branch on your fork from `main`:
+
+```bash
+git checkout main && git checkout -b bh && git push -u origin bh
+```
+
+Or ask booth staff if the upstream `bh` branch hasn't been published yet.
 
 **`❌ Cannot update "bh"` / 403 errors**  
-Your PAT is likely scoped to `main` instead of `bh`, or `main` was targeted by mistake.  
-→ Re-create the token with **Only select branches → `bh`**.
+Your PAT is likely scoped to the upstream repo instead of your fork, or to `main` instead of `bh`.  
+→ Re-create the token against **your fork** with **Only select branches → `bh`**.  
+→ Confirm `REPO_OWNER` in `commit.js` matches your GitHub username.
 
 **Biometric / SDK approval prompt isn't appearing**  
 The desktop app must be unlocked and local SDK integration must be enabled.  
@@ -187,7 +213,7 @@ When you run `commit.js`, the 1Password JS SDK:
 1. Authenticates with the 1Password desktop app (biometrics or account password)
 2. Calls `getVariables()` to fetch secrets from your Environment by ID
 3. Reads `BH_GITHUB_TOKEN` in memory — never from disk or shell history
-4. Uses the token to create and push a Git commit to the **`bh`** branch via the GitHub API
+4. Uses the token to create and push a Git commit to the **`bh`** branch on **your fork** via the GitHub API
 5. Destroys the secret when the process exits
 
 This is the same pattern used in production applications to eliminate plaintext secrets from codebases entirely.

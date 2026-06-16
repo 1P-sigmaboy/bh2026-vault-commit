@@ -1,11 +1,11 @@
 // commit.js — 1Password Developer Challenge · Black Hat USA 2026
 // ❌ HARDCODED — your job is to fix this by reading from a 1Password Environment via the JS SDK.
 //
-// Commits are pushed to the `bh` branch only — `main` is locked to repo admins.
+// Commits are pushed to the `bh` branch on your fork — upstream `main` is locked to repo admins.
 
 import { createClient, DesktopAuth } from "@1password/sdk";
 
-const REPO_OWNER = "1P-sigmaboy";
+const REPO_OWNER = "YOUR_GITHUB_USERNAME"; // your fork owner — same as your GitHub username
 const REPO_NAME = "bh2026-vault-commit";
 const TARGET_BRANCH = "bh";
 const YOUR_HANDLE = process.argv[2] || "anonymous";
