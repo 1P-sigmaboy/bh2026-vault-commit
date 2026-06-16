@@ -59,11 +59,19 @@ Fine-grained PATs can only write to repositories you own. Fork the upstream chal
 
 ### Step 3 — Create your GitHub Personal Access Token
 
-1. Go to [github.com](https://github.com) → **Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens**.
-2. Create a token scoped to **your fork**: `<YourUsername>/bh2026-vault-commit` (not the upstream `1P-sigmaboy` repo).
-3. Set **Contents** to **Read and Write**.
-4. Under **Branch access**, choose **Only select branches** and add **`bh`** (not `main`).
-5. Copy the token — you'll need it in the next step.
+1. Go to [github.com](https://github.com) → **Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens** → **Generate new token**.
+2. Under **Repository access**, select **Only select repositories** and choose **your fork**: `<YourUsername>/bh2026-vault-commit` (not the upstream `1P-sigmaboy` repo).
+3. Under **Permissions → Repository permissions**, set exactly:
+
+   | Permission | Access | Required? |
+   |---|---|---|
+   | **Contents** | **Read and write** | Yes — creates commits and updates the `bh` branch |
+   | **Metadata** | **Read-only** | Yes — added automatically by GitHub |
+
+   Do **not** add other permissions (Actions, Pull requests, etc.) — you only need the two above.
+
+4. Under **Branch access** (below repository access), choose **Only select branches** and add **`bh`** (not `main`).
+5. Set a short expiration, generate the token, and copy it — you'll need it in the next step.
 
 > **Upstream (read-only reference):** `github.com/1P-sigmaboy/bh2026-vault-commit`  
 > **Your fork (PAT + commits):** `github.com/<YourUsername>/bh2026-vault-commit`  
@@ -178,7 +186,8 @@ The variable name or Environment ID doesn't match.
 
 **`❌ Could not read repo ref. Check your token permissions.`**  
 Your token doesn't have write access to the repo, is scoped to the wrong branch, or has expired.  
-→ Fork the repo first (Step 2), then create a fine-grained PAT scoped to **your fork** (`<YourUsername>/bh2026-vault-commit`) with **Contents: Read and Write** and **branch access: `bh` only**.
+→ Fork the repo first (Step 2), then create a fine-grained PAT scoped to **your fork** with **Contents: Read and write** and **Metadata: Read-only** (required).  
+→ Under **Branch access**, select **Only select branches → `bh`**.
 
 **`❌ Branch "bh" does not exist yet`**  
 Create the `bh` branch on your fork from `main`:
